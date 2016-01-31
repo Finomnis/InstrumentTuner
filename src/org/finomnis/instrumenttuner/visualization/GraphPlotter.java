@@ -8,7 +8,7 @@ import java.awt.image.BufferedImage;
 
 public class GraphPlotter implements GraphRenderer{
 	
-	public void plotGraph(BufferedImage buf, float[] data_x, float[] data_y, float x_min, float x_max, float y_min, float y_max){
+	public void plotGraph(BufferedImage buf, float[] data_x, float[] data_y, float x_min, float x_max, float y_min, float y_max, float[] marks){
 		if(data_x.length != data_y.length) throw new RuntimeException("Internal Error!");
 		
 		int width = buf.getWidth();
@@ -34,6 +34,9 @@ public class GraphPlotter implements GraphRenderer{
 		float scaling_x = graph_width/(x_max - x_min);
 		float scaling_y = graph_height/(y_max - y_min);
 		
+		g2d.setColor(Color.BLUE);
+		g2d.draw(new Line2D.Double(0, height/2.0, width, height/2.0));
+
 		// Plot the actual graph
 		g2d.setColor(Color.BLACK);
 		for(int i = 0; i < data_x.length-1; i++){
@@ -44,8 +47,14 @@ public class GraphPlotter implements GraphRenderer{
 			g2d.draw(new Line2D.Double(x0, y0, x1, y1));
 		}
 		
-		g2d.draw(new Line2D.Double(0, height/2.0, width, height/2.0));
-
+		
+		g2d.setColor(Color.RED);
+		for(int i = 0; i < marks.length; i++){
+			float x0 = (marks[i] - x_min) * scaling_x + graph_pos_x;
+			float y0 = graph_pos_y;
+			float y1 = graph_pos_y + graph_height;
+			g2d.draw(new Line2D.Double(x0, y0, x0, y1));
+		}
 	}
 
 }

@@ -14,7 +14,7 @@ public class ContinuousPlotter implements GraphRenderer{
 		this.colorTable = colorTable;
 	}
 	
-	public void plotGraph(BufferedImage buf, float[] data_x, float[] data_y, float x_min, float x_max, float y_min, float y_max){
+	public void plotGraph(BufferedImage buf, float[] data_x, float[] data_y, float x_min, float x_max, float y_min, float y_max, float[] marks){
 		if(data_x.length != data_y.length) throw new RuntimeException("Internal Error!");
 		
 		int width = buf.getWidth();

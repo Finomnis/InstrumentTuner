@@ -20,6 +20,7 @@ public class GraphWindow {
 		private float x_max = 0;
 		private float y_min = 0;
 		private float y_max = 0;
+		private float marks[] = new float[0];
 		private boolean needs_update = true;
 		private Lock l = new ReentrantLock();
 		
@@ -84,12 +85,19 @@ public class GraphWindow {
 			
 			if(c_needs_update){
 				if(c_x_vals != null && c_y_vals != null){
-					graphRenderer.plotGraph(renderBuffer, c_x_vals, c_y_vals, c_x_min, c_x_max, c_y_min, c_y_max);
+					graphRenderer.plotGraph(renderBuffer, c_x_vals, c_y_vals, c_x_min, c_x_max, c_y_min, c_y_max, marks);
 				}
 			}
 			
 			g.drawImage(renderBuffer, 0, 0, this);
 			
+		}
+
+		public void setMarks(float[] marks) {
+			l.lock();
+			this.marks = marks;
+			needs_update = true;
+			l.unlock();
 		}
 		
 	}
@@ -140,6 +148,13 @@ public class GraphWindow {
 	public void updateData(float[] x, float[] y){
 		graphComponent.setData(x, y);
 		graphComponent.repaint();
+	}
+	
+	public void setMarks(float[] marks){
+		if(marks == null){
+			marks = new float[0];
+		}
+		graphComponent.setMarks(marks);
 	}
 	
 	public void close(){
