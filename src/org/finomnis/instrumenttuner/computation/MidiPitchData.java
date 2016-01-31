@@ -4,6 +4,7 @@ public class MidiPitchData {
 
 	public final float midiMin;
 	public final float midiMax;
+	public final float stepWidth;
 	
 	private final float[] midis;
 	private final float[] midiCorelations;
@@ -11,12 +12,13 @@ public class MidiPitchData {
 	
 	private int max_rough;
 	
-	public MidiPitchData(float midiMin, float midiMax){
+	public MidiPitchData(float midiMin, float midiMax, float stepWidth){
 		this.midiMin = midiMin;
 		this.midiMax = midiMax;
+		this.stepWidth = stepWidth;
 		
 		int numBuckets = 0;
-		for(float midi = midiMin; midi <= midiMax; midi+=0.01f){
+		for(float midi = midiMin; midi <= midiMax; midi+=stepWidth){
 			numBuckets++;
 		}
 		midis = new float[numBuckets];
@@ -24,7 +26,7 @@ public class MidiPitchData {
 		midiCorelationsWithSubtoneRemoval = new float[numBuckets];
 		
 		int i = 0;
-		for(float midi = midiMin; midi <= midiMax; midi+=0.01f){
+		for(float midi = midiMin; midi <= midiMax; midi+=stepWidth){
 			midis[i] = midi;
 			midiCorelations[i] = 0.0f;
 			i++;
@@ -53,7 +55,7 @@ public class MidiPitchData {
 		doSubtoneRemoval();
 	}
 	
-	public final static float overtoneDetectionThreshold = 0.004f;
+	public final static float overtoneDetectionStrength = 0.005f;
 	
 	private static int roughMaximum(float[] vals, float[] midis){
 		
@@ -61,8 +63,8 @@ public class MidiPitchData {
 		float absoluteMaximum = 0.0f;
 		int absoluteMaximumPosition = -1;
 		for(int i = 0; i < vals.length; i++){
-			if(absoluteMaximum < vals[i]+overtoneDetectionThreshold*midis[i]){
-				absoluteMaximum = vals[i]+overtoneDetectionThreshold*midis[i];
+			if(absoluteMaximum < vals[i]+overtoneDetectionStrength*midis[i]){
+				absoluteMaximum = vals[i]+overtoneDetectionStrength*midis[i];
 				absoluteMaximumPosition = i;
 			}
 		}

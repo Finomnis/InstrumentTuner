@@ -1,8 +1,4 @@
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.finomnis.instrumenttuner.computation.FFT;
 import org.finomnis.instrumenttuner.computation.MidiPitchData;
 import org.finomnis.instrumenttuner.computation.SelfSim;
 import org.finomnis.instrumenttuner.computation.SelfSimData;
@@ -22,8 +18,8 @@ public class Main {
 		GraphWindow graphWindow3 = new GraphWindow("Bb-Recognition", new GraphPlotter());
 		GraphWindow graphWindow4 = new GraphWindow("Note-Recognition", new ContinuousPlotter(ColorTable.HeatMap));
 		//GraphWindow graphWindow4 = new GraphWindow("Note-Recognition", new GraphPlotter());
-		//GraphWindow graphWindow5 = new GraphWindow("Note-Recognition (without Overtones)", new ContinuousPlotter(ColorTable.HeatMap));
-		GraphWindow graphWindow5 = new GraphWindow("Note-Recognition (without Overtones)", new GraphPlotter());
+		GraphWindow graphWindow5 = new GraphWindow("Note-Recognition (without Overtones)", new ContinuousPlotter(ColorTable.HeatMap));
+		//GraphWindow graphWindow5 = new GraphWindow("Note-Recognition (without Overtones)", new GraphPlotter());
 		float y[] = {10, 15, 13, 11, 12};
 		float x[] = {0.7f, 1.0f, 1.3f, 1.4f, 1.8f};
 		
@@ -38,7 +34,7 @@ public class Main {
 		double t_framesync = System.currentTimeMillis();
 		
 		SelfSimData selfSimData = new SelfSimData(input.sampleRate);
-		MidiPitchData midiPitchData = new MidiPitchData(37.0f, 95.0f);
+		MidiPitchData midiPitchData = new MidiPitchData(37.0f, 95.0f, 0.01f);
 		
 		while(graphWindow != null){
 			
@@ -174,6 +170,8 @@ public class Main {
 				double targetfps = 100;
 				t_framesync = t_framesync + 1000/targetfps;
 				double leftover_frame_time = t_framesync - System.currentTimeMillis();
+				//System.out.println(leftover_frame_time);
+				leftover_frame_time = t_framesync - System.currentTimeMillis();
 				if(leftover_frame_time > 0)
 					Thread.sleep(Math.round(leftover_frame_time));
 				else {
