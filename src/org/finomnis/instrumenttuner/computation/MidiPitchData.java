@@ -36,8 +36,18 @@ public class MidiPitchData {
 	public void fromSelfSim(SelfSimData data){
 		for(int i = 0; i < midis.length; i++){
 			float currentMidi = midis[i];
-			float freq = (float) (Math.pow(2.0f, (currentMidi - 69.0f)/12.0f) * 440.0f);
+			float freq = GeneralMath.midiToFreq(currentMidi);
 			midiCorelations[i] = data.getFrequencyCorelation(freq);
+			//if(midiCorelations[i] > 0.01f) System.out.println(i + " - " + midiCorelations[i]);
+		}
+		doMaximumExtraction();
+	}
+	
+	public void fromFFT(FFTData data){
+		for(int i = 0; i < midis.length; i++){
+			float currentMidi = midis[i];
+			float freq = GeneralMath.midiToFreq(currentMidi);
+			midiCorelations[i] = data.getFrequencyIntensity(freq);
 		}
 		doMaximumExtraction();
 	}
@@ -63,16 +73,18 @@ public class MidiPitchData {
 		float absoluteMaximum = 0.0f;
 		int absoluteMaximumPosition = -1;
 		for(int i = 0; i < vals.length; i++){
+			//if(vals[i] == 0.0f) continue;
 			if(absoluteMaximum < vals[i]+overtoneDetectionStrength*midis[i]){
 				absoluteMaximum = vals[i]+overtoneDetectionStrength*midis[i];
 				absoluteMaximumPosition = i;
 			}
 		}
-		if(absoluteMaximumPosition == -1){
+
+		if(absoluteMaximumPosition == vals.length-1){
 			return -1;
 		}
-		return absoluteMaximumPosition;
 		
+		return absoluteMaximumPosition;
 	}
 
 	private void doSubtoneRemoval(){
@@ -124,27 +136,21 @@ public class MidiPitchData {
 		
 		double sum = 0.0;
 		for(int i = peak_left; i<=peak_right; i++){
-			double freq = Math.pow(2.0f, (midis[i] - 69.0f)/12.0f) * 440.0f;
+			double freq = GeneralMath.midiToFreq(midis[i]);
 			double period = 1.0/freq;
 			sum += midiCorelations[i]*period;
 		}
 		
 		double midp = 0.0;
 		for(int i = peak_left; i<=peak_right; i++){
-			double freq = Math.pow(2.0f, (midis[i] - 69.0f)/12.0f) * 440.0f;
+			double freq = GeneralMath.midiToFreq(midis[i]);
 			double period = 1.0/freq;
 			midp += i*(midiCorelations[i]*period/sum);
 		}
 		
 		float maximum = (float)midp;
 		
-		int max_left = (int)maximum;
-		int max_right = max_left + 1;
-		
-		float max_right_strength = maximum - max_left;
-		float max_left_strength = 1f - max_right_strength;
-		
-		float max_midi = midis[max_left] * max_left_strength + midis[max_right] * max_right_strength;
+		float max_midi = GeneralMath.interpolate(midis, maximum);
 		
 		//System.out.println(max_midi);
 		return max_midi;

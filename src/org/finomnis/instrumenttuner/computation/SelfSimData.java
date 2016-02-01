@@ -3,10 +3,15 @@ package org.finomnis.instrumenttuner.computation;
 public class SelfSimData {
 
 	private float[] data;
-	private final float samplingRate;
+	public final float samplingRate;
 	
 	public SelfSimData(float samplingRate){
 		this.samplingRate = samplingRate;
+	}
+	
+	
+	public float[] getData(){
+		return data;
 	}
 	
 	public void setData(float[] data){
@@ -46,17 +51,24 @@ public class SelfSimData {
 	
 	
 	public float getInterpolatedValue(float pos){
-		int p0 = (int) pos;
-		int p1 = p0 + 1;
-		
-		if(p0 < 0 || p1 >= data.length){
+		return GeneralMath.interpolate(data, pos);
+	}
+
+
+	public void clearData() {
+		for(int i = 0; i < data.length; i++){
+			data[i] = 0;
+		}
+	}
+
+
+	public void addSmooth(SelfSimData other, float smoothingFactor) {
+		if(data.length != other.data.length){
 			throw new RuntimeException("Internal Error!");
 		}
-		
-		float p1_intensity = pos - p0;
-		float p0_intensity = p1 - pos;
-		
-		return data[p0] * p0_intensity + data[p1] * p1_intensity;
+		for(int i = 0; i < data.length; i++){
+			data[i] = smoothingFactor*data[i] + (1-smoothingFactor) * other.data[i];
+		}
 	}
 	
 	
