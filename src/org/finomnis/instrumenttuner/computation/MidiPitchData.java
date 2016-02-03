@@ -33,11 +33,11 @@ public class MidiPitchData {
 		}
 	}
 	
-	public void fromSelfSim(SelfSimData data){
+	public void fromSelfSim(SelfSimData data, int numOvertones){
 		for(int i = 0; i < midis.length; i++){
 			float currentMidi = midis[i];
 			float freq = GeneralMath.midiToFreq(currentMidi);
-			midiCorelations[i] = data.getFrequencyCorelation(freq);
+			midiCorelations[i] = data.getFrequencyCorelation(freq, numOvertones);
 			//if(midiCorelations[i] > 0.01f) System.out.println(i + " - " + midiCorelations[i]);
 		}
 		doMaximumExtraction();

@@ -1,5 +1,6 @@
 import org.finomnis.instrumenttuner.computation.MidiPitchData;
 import org.finomnis.instrumenttuner.computation.NoteAnalysisPipeline;
+import org.finomnis.instrumenttuner.computation.PreProcessor;
 import org.finomnis.instrumenttuner.computation.SelfSimData;
 import org.finomnis.instrumenttuner.visualization.ColorTable;
 import org.finomnis.instrumenttuner.visualization.ContinuousPlotter;
@@ -11,42 +12,55 @@ public class Main {
 
 	public static void main(String[] args) {
 
+		GraphWindow graphWindow0 = new GraphWindow("Original Signal", new GraphPlotter());
+		GraphWindow graphWindow00 = new GraphWindow("Preprocessed Signal", new GraphPlotter());
+		
 		
 		GraphWindow graphWindow = new GraphWindow("SelfSim", new GraphPlotter());
 		GraphWindow graphWindow2 = new GraphWindow("Continuous", new ContinuousPlotter(ColorTable.HeatMap));
 		GraphWindow graphWindow3 = new GraphWindow("Bb-Recognition", new GraphPlotter());
 		//GraphWindow graphWindow4 = new GraphWindow("Note-Recognition", new ContinuousPlotter(ColorTable.HeatMap));
 		GraphWindow graphWindow4 = new GraphWindow("Note-Recognition", new GraphPlotter());
-		GraphWindow graphWindow5 = new GraphWindow("Note-Recognition (without Overtones)", new ContinuousPlotter(ColorTable.HeatMap));
+		GraphWindow graphWindow5 = new GraphWindow("Note-Recognition (without Overtones)", new ContinuousPlotter(ColorTable.GrayScale));
 		//GraphWindow graphWindow5 = new GraphWindow("Note-Recognition (without Overtones)", new GraphPlotter());
 		//GraphWindow graphWindow6 = new GraphWindow("FFT", new ContinuousPlotter(ColorTable.GrayScale));
 		GraphWindow graphWindow6 = new GraphWindow("FFT", new GraphPlotter());
 		
-		int bufferSize = 2000;
+		int bufferSize = 4096;
 		
 		AudioInput input = AudioInput.create(bufferSize);
 		double t_framesync = System.currentTimeMillis();
 		
-		MidiPitchData midiPitchFFTData = new MidiPitchData(37.0f, 95.0f, 0.01f);
+		MidiPitchData midiPitchFFTData = new MidiPitchData(65.0f, 95.0f, 0.01f);
 		
-		NoteAnalysisPipeline analysisPipeline = new NoteAnalysisPipeline(37.0f, 95.0f, 0.01f, input.sampleRate);
+		NoteAnalysisPipeline analysisPipeline = new NoteAnalysisPipeline(37.0f, 95.0f, 0.001f, input.sampleRate);
 		analysisPipeline.enableFFT(true);
+		
+		float[] data = null;
+		
+		PreProcessor preProcessor = new PreProcessor(input.sampleRate);
 		
 		while(graphWindow != null){
 			
-			int[] datai = input.getNewestData(false);
+			data = input.getNewestFloatData(data, false);
 			
-			float[] data = new float[datai.length];
-			for(int j = 0; j < data.length; j++){
-				data[j] = datai[j];
-			}
+			
+			graphWindow0.setXRange(0, data.length);
+			graphWindow0.setYRange(1, -1);
+			graphWindow0.updateData(GraphRenderer.getIndices(data.length), data);
+			
+			data = preProcessor.preProcess(data, 5);
+			
+			graphWindow00.setXRange(0, data.length);
+			graphWindow00.setYRange(1f, -1f);
+			graphWindow00.updateData(GraphRenderer.getIndices(data.length), data);
 			
 			analysisPipeline.analyze(data);
 			
 			SelfSimData selfSimData = analysisPipeline.getSelfSimData();
 			MidiPitchData midiPitchData = analysisPipeline.getMidiPitchData();
 
-			float[] bb3_recognition = selfSimData.getFrequencyValues(233.08f);
+			float[] bb3_recognition = selfSimData.getFrequencyValues(233.08f, 5);
 			
 			
 			midiPitchFFTData.fromFFT(analysisPipeline.getFFTData());
@@ -68,19 +82,19 @@ public class Main {
 			max[0] = analysisPipeline.getAutoNote().getMidiPitch();
 //			max[0] = midiPitchData.getExactMaximum(45);
 			for(int j = 1; j<max.length; j++){
-				max[j] = -1;//j;
+				max[j] = j;
 			}
 			
 			
 			
 			graphWindow4.setXRange(midiPitchData.midiMin, midiPitchData.midiMax);
+			graphWindow4.setXRange(44.0f, 46.0f);
 			graphWindow4.setYRange(0f, 1f);
 			graphWindow4.updateData(midiPitchData.getMidis(), midiPitchData.getMidiCorelations());
 			graphWindow4.setMarks(max);
 			
 			graphWindow5.setXRange(midiPitchData.midiMin, midiPitchData.midiMax);
 			graphWindow5.setYRange(0f, 1f);
-			//graphWindow5.setXRange(44.0f, 46.0f);
 			graphWindow5.updateData(midiPitchData.getMidis(), midiPitchData.getMidiCorelationsWithSubtoneRemoval());
 			graphWindow5.setMarks(max);
 			

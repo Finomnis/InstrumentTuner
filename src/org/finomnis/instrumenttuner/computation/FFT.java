@@ -27,6 +27,15 @@ package org.finomnis.instrumenttuner.computation;
 
 public class FFT {
 	
+	/*
+	 * Computes the frequency of a bin
+	 */
+	public static float getBinFrequency(int bin, int num_bins, float samplingFrequency){
+		if(2*bin > num_bins) bin = num_bins - bin;
+		float freq = bin * samplingFrequency / num_bins;
+		return freq;
+	}
+	
 	/* 
 	 * Computes the discrete Fourier transform (DFT) of the given complex vector, storing the result back into the vector.
 	 * The vector can have any length. This is a wrapper function.

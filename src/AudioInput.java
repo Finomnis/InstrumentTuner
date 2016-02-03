@@ -7,6 +7,7 @@ public class AudioInput {
 
 	public final int sampleRate;
 	public final int sampleSize;
+	public final int sampleMaxValue;
 	
 	private TargetDataLine line;
 	
@@ -19,6 +20,11 @@ public class AudioInput {
 	private AudioInput(int sampleRate, int sampleSize, int bufferSize) throws LineUnavailableException{
 		this.sampleRate = sampleRate;
 		this.sampleSize = sampleSize;
+		
+		
+		this.sampleMaxValue = 1 << (8*sampleSize - 1);
+		
+		System.out.println("SampleMaxValue: " + this.sampleMaxValue);
 		
 		//AudioFormat format = new AudioFormat(sampleRate, sampleSize, 1, true, false);
 		AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, sampleRate, sampleSize*8, 1, sampleSize, sampleRate,  true);
@@ -60,6 +66,28 @@ public class AudioInput {
 		
 	}
 
+	public float[] getNewestFloatData(float [] suggestionBuffer, boolean zeroDelay){
+		
+		// retrieve new data
+		int[] newData = getNewestData(zeroDelay);
+		
+		// re-initialize buffer if necessary
+		if(suggestionBuffer == null){
+			suggestionBuffer = new float[newData.length];
+		} else if (suggestionBuffer.length != newData.length){
+			suggestionBuffer = new float[newData.length];
+		}
+		
+		// convert
+		float sampleMaxValueF = sampleMaxValue;
+		for(int i = 0; i < newData.length; i++){
+			suggestionBuffer[i] = newData[i] / sampleMaxValueF;
+		}
+		
+		return suggestionBuffer;
+		
+	}
+	
 	public int[] getNewestData(boolean zeroDelay){
 		
 		// check for available data
@@ -70,7 +98,7 @@ public class AudioInput {
 		//System.out.println("lag: " + (available - positionChange));
 		
 		int readNum = positionChange;
-		if(available < readNum | zeroDelay){
+		if(available < readNum || zeroDelay){
 			//System.out.println("LAG! " + (available - readNum));
 			readNum = available;
 		}

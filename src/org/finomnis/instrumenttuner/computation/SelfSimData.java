@@ -4,7 +4,7 @@ public class SelfSimData {
 
 	private float[] data;
 	public final float samplingRate;
-	
+		
 	public SelfSimData(float samplingRate){
 		this.samplingRate = samplingRate;
 	}
@@ -18,13 +18,10 @@ public class SelfSimData {
 		this.data = data;
 	}
 	
-	public float[] getFrequencyValues(float freq){
+	public float[] getFrequencyValues(float freq, int numOvertones){
 		float period = samplingRate/freq;
 		
-		float pos_max = data.length*0.7f;
-		int num_values = (int)(pos_max / period);
-		
-		float[] result = new float[num_values];
+		float[] result = new float[numOvertones];
 	
 		for(int i = 0; i < result.length; i++){
 			result[i] = getInterpolatedValue(period * (i+1));
@@ -33,15 +30,12 @@ public class SelfSimData {
 		return result;
 	}
 	
-	public float getFrequencyCorelation(float freq){
+	public float getFrequencyCorelation(float freq, int numOvertones){
 		float period = samplingRate/freq;
-		
-		float pos_max = data.length*0.7f;
-		int num_values = (int)(pos_max / period);
 		
 		float result = 0.0f;
 		
-		for(int i = 0; i < num_values; i++){
+		for(int i = 0; i < numOvertones; i++){
 			float currentVal = getInterpolatedValue(period * (i+1));
 			if(currentVal > result) result = currentVal;
 		}
